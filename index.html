@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🎌 Guess the Anime Hero!</title>
+  <style>
+    body {
+      background: linear-gradient(to right, #fceabb, #f8b500);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-align: center;
+      padding: 40px;
+      color: #333;
+    }
+
+    h1 {
+      font-size: 3em;
+      margin-bottom: 30px;
+      color: #fff;
+      text-shadow: 2px 2px #000;
+    }
+
+    #game-container {
+      background-color: #fff8dc;
+      border-radius: 25px;
+      padding: 30px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      max-width: 700px;
+      margin: auto;
+    }
+
+    #hero-img {
+      width: auto;
+      max-width: 100%;
+      max-height: 600px;
+      object-fit: contain;
+      border-radius: 15px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+      margin-bottom: 20px;
+    }
+
+    input[type="text"] {
+      padding: 12px;
+      font-size: 1.1em;
+      width: 80%;
+      max-width: 300px;
+      border-radius: 10px;
+      border: 2px solid #f8b500;
+    }
+
+    button {
+      padding: 12px 25px;
+      font-size: 1.1em;
+      margin: 10px;
+      border: none;
+      border-radius: 10px;
+      background-color: #f8b500;
+      color: white;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #d48c00;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+
+    #score {
+      margin-top: 10px;
+      font-size: 1.2em;
+    }
+
+    #correct-name {
+      margin-top: 15px;
+      font-size: 1.1em;
+      color: #b10000;
+      font-weight: bold;
+    }
+
+    #hint {
+      margin-top: 10px;
+      font-style: italic;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎌 Guess the Anime Hero!</h1>
+  <div id="game-container">
+    <img id="hero-img" src="" alt="Anime Poster">
+    <div id="guess-box">
+      <input type="text" id="guess" placeholder="Enter anime hero name">
+      <br>
+      <button onclick="checkAnswer()">Submit</button>
+    </div>
+    <div id="result"></div>
+    <div id="hint"></div>
+    <div id="correct-name"></div>
+    <div id="score">Score: 0</div>
+  </div>
+
+  <script>
+    const heroes = [
+      { name: "Naruto uzumaki", img: "naruto.jpg" },
+      { name: "Uchina itachi", img: "itachi.jpg" },
+      { name: "Goku", img: "goku.jpg" },
+      { name: "Monkey D luffy", img: "luffy.jpg" },
+      { name: "Roronoa zoro", img: "zoro.jpg" },
+      { name: "Van Hohenheim", img: "hohenheim.jpg" },
+      { name: "Yato God of Calamity", img: "yato.jpg" },
+      { name: "Tohru Honda", img: "tohru.jpg" },
+      { name: "Makunouchi Ippo", img: "ippo.jpg" },
+      { name: "Akane Tsunemori", img: "akane.jpg" },
+      { name: "Lain Iwakura", img: "lain.jpg" },
+      { name: "Rikuo Nura", img: "rikuo.jpg" },
+      { name: "Holo the Wise Wolf", img: "holo.jpg" },
+      { name: "Okabe Rintarou", img: "okabe.jpg" },
+      { name: "Yuki Nagato", img: "yuki.jpg" },
+      { name: "Senkuu Ishigami", img: "senku.jpg" },
+      { name: "Kazuto Kirigaya", img: "kirito.jpg" },
+      { name: "Gojou Satoru", img: "gojou.jpg" },
+      { name: "Houtarou Oreki", img: "oreki.jpg" },
+      { name: "Tsukasa Shishio", img: "tsukasa.jpg" },
+      { name: "Yozora Mikazuki", img: "yozora.jpg" },
+      { name: "Nana Osaki", img: "nana.jpg" },
+      { name: "Slaine troyard", img: "slaine.jpg" },
+      { name: "Re-l Mayer", img: "rel.jpg" },
+      { name: "Ai Enma", img: "ai.jpg" }
+    ];
+
+    let current = 0, score = 0, gameEnded = false, chances = 3, waiting = false;
+
+    function normalize(text) {
+      return text
+        .toLowerCase()
+        .replace(/[\s\W_]+/g, '') // remove all symbols and spaces
+        .replace(/s/g, ''); // remove all 's'
+    }
+
+    function loadHero() {
+      if (gameEnded) return;
+      const h = heroes[current];
+      document.getElementById('hero-img').src = h.img;
+      document.getElementById('guess').value = "";
+      document.getElementById('guess').disabled = false;
+      document.getElementById('result').innerText = "";
+      document.getElementById('correct-name').innerText = "";
+      document.getElementById('hint').innerText = "";
+      chances = 3;
+      waiting = false;
+    }
+
+    function getHint(name) {
+      const clean = name.replace(/\s+/g, '');
+      const firstLetter = clean.charAt(0).toUpperCase();
+      const lastLetter = clean.charAt(clean.length - 1).toLowerCase();
+      return `Hint: It starts with "${firstLetter}" and ends with "${lastLetter}".`;
+    }
+
+    function checkAnswer() {
+      if (gameEnded || waiting) return;
+
+      const guess = normalize(document.getElementById('guess').value);
+      const correct = normalize(heroes[current].name);
+
+      if (guess === correct) {
+        score++;
+        document.getElementById('score').innerText = `Score: ${score}`;
+        document.getElementById('result').innerText = "✅ Correct!";
+        document.getElementById('hint').innerText = "";
+        waiting = true;
+        setTimeout(nextHero, 1000);
+      } else {
+        chances--;
+        document.getElementById('result').innerText = `❌ Wrong!${chances > 0 ? ` You have ${chances} ${chances === 1 ? 'chance' : 'chances'} left.` : ''}`;
+
+        if (chances === 1) {
+          const hint = getHint(heroes[current].name);
+          document.getElementById('hint').innerText = hint;
+        }
+
+        if (chances <= 0) {
+          document.getElementById('correct-name').innerText = `It was: ${heroes[current].name}`;
+          document.getElementById('guess').disabled = true;
+          document.getElementById('hint').innerText = "";
+          waiting = true;
+          setTimeout(nextHero, 3000);
+        }
+      }
+    }
+
+    function nextHero() {
+      current++;
+      if (current >= heroes.length) endGame();
+      else loadHero();
+    }
+
+    function endGame() {
+      gameEnded = true;
+      document.getElementById('game-container').innerHTML = `
+        <h2>🎉 Game Over!</h2>
+        <p>Your final score is: <strong>${score}/${heroes.length}</strong></p>
+        <p style="font-size:2em;">${
+          score <= heroes.length/3 ? "📺 Watch more anime, newbie!" :
+          score <= (heroes.length*2)/3 ? "👍 Pretty good effort!" :
+          "🔥 You're a real anime sensei!"
+        }</p>`;
+    }
+
+    loadHero();
+  </script>
+</body>
+</html>
